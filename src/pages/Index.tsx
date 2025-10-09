@@ -1,9 +1,18 @@
+import { useState } from "react";
 import { Wallet, TrendingUp, PiggyBank, Landmark } from "lucide-react";
 import { AssetCard } from "@/components/AssetCard";
 import { SavingsChart } from "@/components/SavingsChart";
 import { TopExpenses } from "@/components/TopExpenses";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SavingsAccountDetails } from "@/components/SavingsAccountDetails";
+import { MutualFundDetails } from "@/components/MutualFundDetails";
+import { FixedDepositDetails } from "@/components/FixedDepositDetails";
+
+type AssetType = 'savings' | 'mutualfunds' | 'fixeddeposits' | null;
 
 const Index = () => {
+  const [selectedAsset, setSelectedAsset] = useState<AssetType>(null);
+  
   const totalAssets = 585000;
   const fixedDeposits = 250000;
   const mutualFunds = 185000;
@@ -43,6 +52,7 @@ const Index = () => {
               icon={Landmark}
               change={5.2}
               description="3 active deposits"
+              onViewDetails={() => setSelectedAsset('fixeddeposits')}
             />
             <AssetCard
               title="Mutual Funds"
@@ -50,6 +60,7 @@ const Index = () => {
               icon={TrendingUp}
               change={12.8}
               description="Equity & debt funds"
+              onViewDetails={() => setSelectedAsset('mutualfunds')}
             />
             <AssetCard
               title="Savings Account"
@@ -57,6 +68,7 @@ const Index = () => {
               icon={PiggyBank}
               change={8.5}
               description="Primary account"
+              onViewDetails={() => setSelectedAsset('savings')}
             />
           </div>
         </section>
@@ -70,6 +82,18 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      {/* Asset Details Dialog */}
+      <Dialog open={selectedAsset !== null} onOpenChange={() => setSelectedAsset(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Asset Details</DialogTitle>
+          </DialogHeader>
+          {selectedAsset === 'savings' && <SavingsAccountDetails />}
+          {selectedAsset === 'mutualfunds' && <MutualFundDetails />}
+          {selectedAsset === 'fixeddeposits' && <FixedDepositDetails />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
