@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useExpenses } from "@/hooks/useExpenses";
 import { toast } from "sonner";
+import { EXPENSE_CATEGORIES } from "@/types/models";
 
 interface AddExpenseDialogProps {
   open: boolean;
@@ -50,13 +52,18 @@ export const AddExpenseDialog = ({ open, onOpenChange }: AddExpenseDialogProps) 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="category">Category *</Label>
-            <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g., Groceries, Rent, Transportation"
-              required
-            />
+            <Select value={category} onValueChange={setCategory} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {EXPENSE_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="amount">Amount (₹) *</Label>
