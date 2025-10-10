@@ -1,15 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const expenses = [
-  { category: 'Rent', amount: 25000, percentage: 42 },
-  { category: 'Groceries', amount: 8500, percentage: 14 },
-  { category: 'Transportation', amount: 6000, percentage: 10 },
-  { category: 'Utilities', amount: 4500, percentage: 8 },
-  { category: 'Entertainment', amount: 3500, percentage: 6 },
-];
+import { useExpenses } from "@/hooks/useExpenses";
 
 export const TopExpenses = () => {
+  const { expenses: allExpenses } = useExpenses();
+
+  // Get current month's expenses
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+
+  const monthExpenses = allExpenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+  });
+
+  // Calculate totals by category
+  const categoryTotals = monthExpenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Get top 5 expenses
+  const totalAmount = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0);
+  const topExpenses = Object.entries(categoryTotals)
+    .map(([category, amount]) => ({
+      category,
+      amount,
+      percentage: totalAmount > 0 ? Math.round((amount / totalAmount) * 100) : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
   return (
     <Card className="border-border/50">
       <CardHeader>
@@ -17,8 +38,13 @@ export const TopExpenses = () => {
         <p className="text-sm text-muted-foreground">Current month breakdown</p>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {expenses.map((expense, index) => (
+        {topExpenses.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No expenses recorded for this month
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {topExpenses.map((expense, index) => (
             <div key={expense.category} className="flex items-center justify-between group">
               <div className="flex items-center gap-3 flex-1">
                 <Badge variant="outline" className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold">
@@ -41,8 +67,9 @@ export const TopExpenses = () => {
                 <p className="text-xs text-muted-foreground">{expense.percentage}%</p>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

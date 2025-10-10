@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wallet, TrendingUp, PiggyBank, Landmark, Plus, LogOut } from "lucide-react";
+import { Wallet, TrendingUp, PiggyBank, Landmark, Plus, LogOut, Receipt } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAssets } from "@/hooks/useAssets";
 import { AssetCard } from "@/components/AssetCard";
@@ -12,6 +12,7 @@ import { SavingsAccountDetails } from "@/components/SavingsAccountDetails";
 import { MutualFundDetails } from "@/components/MutualFundDetails";
 import { FixedDepositDetails } from "@/components/FixedDepositDetails";
 import { AddAssetDialog } from "@/components/AddAssetDialog";
+import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 
 type AssetType = 'savings' | 'mutualfunds' | 'fixeddeposits' | null;
 
@@ -21,6 +22,7 @@ const Index = () => {
   const { savingsAccounts, mutualFunds, fixedDeposits } = useAssets();
   const [selectedAsset, setSelectedAsset] = useState<AssetType>(null);
   const [addAssetType, setAddAssetType] = useState<'savings' | 'mutual-fund' | 'fixed-deposit' | null>(null);
+  const [showAddExpense, setShowAddExpense] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -132,7 +134,13 @@ const Index = () => {
 
         {/* Savings & Expenses */}
         <section>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Financial Insights</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-foreground">Financial Insights</h2>
+            <Button onClick={() => setShowAddExpense(true)}>
+              <Receipt className="h-4 w-4 mr-2" />
+              Add Expense
+            </Button>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <SavingsChart />
             <TopExpenses />
@@ -157,6 +165,12 @@ const Index = () => {
         open={addAssetType !== null}
         onOpenChange={(open) => !open && setAddAssetType(null)}
         type={addAssetType!}
+      />
+
+      {/* Add Expense Dialog */}
+      <AddExpenseDialog 
+        open={showAddExpense}
+        onOpenChange={setShowAddExpense}
       />
     </div>
   );
