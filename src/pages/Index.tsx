@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Wallet, TrendingUp, PiggyBank, Landmark, Plus, LogOut, Receipt } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Wallet, TrendingUp, PiggyBank, Landmark, Plus, LogOut, Receipt, LayoutGrid, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAssets } from "@/hooks/useAssets";
 import { AssetCard } from "@/components/AssetCard";
@@ -59,6 +59,16 @@ const Index = () => {
                   ₹{totalAssets.toLocaleString('en-IN')}
                 </p>
               </div>
+              <Button variant="outline" size="icon" asChild>
+                <Link to="/assets">
+                  <LayoutGrid className="h-5 w-5" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="icon" asChild>
+                <Link to="/expenses">
+                  <FileText className="h-5 w-5" />
+                </Link>
+              </Button>
               <Button variant="ghost" size="icon" onClick={logout}>
                 <LogOut className="h-5 w-5" />
               </Button>
