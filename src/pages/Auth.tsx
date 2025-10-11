@@ -15,9 +15,10 @@ const Auth = () => {
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    const success = await login(email, password);
+    if (success) {
       toast.success('Logged in successfully!');
       navigate('/');
     } else {
@@ -25,13 +26,14 @@ const Auth = () => {
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signup(email, password, name)) {
+    const success = await signup(email, password, name);
+    if (success) {
       toast.success('Account created successfully!');
       navigate('/');
     } else {
-      toast.error('Email already exists');
+      toast.error('Email already exists or signup failed');
     }
   };
 

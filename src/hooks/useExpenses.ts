@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { expenseAPI } from '@/services/api';
 
 export interface Expense {
   id: string;
@@ -12,36 +13,47 @@ export interface Expense {
 export const useExpenses = () => {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchExpenses = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const data = await expenseAPI.getAll();
+      setExpenses(data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      const stored = localStorage.getItem(`expenses_${user.email}`);
-      if (stored) {
-        setExpenses(JSON.parse(stored));
-      }
-    }
+    fetchExpenses();
   }, [user]);
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
+  const addExpense = async (expense: Omit<Expense, 'id'>) => {
     if (!user) return;
     
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now().toString(),
-    };
-    
-    const updated = [...expenses, newExpense];
-    setExpenses(updated);
-    localStorage.setItem(`expenses_${user.email}`, JSON.stringify(updated));
+    try {
+      await expenseAPI.create(expense);
+      await fetchExpenses();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+    }
   };
 
-  const deleteExpense = (id: string) => {
+  const deleteExpense = async (id: string) => {
     if (!user) return;
     
-    const updated = expenses.filter(exp => exp.id !== id);
-    setExpenses(updated);
-    localStorage.setItem(`expenses_${user.email}`, JSON.stringify(updated));
+    try {
+      await expenseAPI.delete(id);
+      await fetchExpenses();
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
   };
 
-  return { expenses, addExpense, deleteExpense };
+  return { expenses, loading, addExpense, deleteExpense };
 };

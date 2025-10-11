@@ -66,31 +66,35 @@ const Assets = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {fixedDeposits.map((fd) => (
-                <Card key={fd.id}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{fd.bank}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Amount:</span>
-                      <span className="font-semibold">₹{fd.amount.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Interest Rate:</span>
-                      <span className="font-semibold">{fd.interestRate}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Maturity Date:</span>
-                      <span className="font-semibold">{new Date(fd.maturityDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between pt-2 border-t">
-                      <span className="text-sm text-muted-foreground">Maturity Amount:</span>
-                      <span className="font-bold text-primary">₹{fd.maturityAmount.toLocaleString('en-IN')}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {fixedDeposits.map((fd) => {
+                const years = (new Date(fd.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 365);
+                const maturityAmount = fd.amount * Math.pow(1 + fd.interestRate / 100, years);
+                return (
+                  <Card key={fd.id}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{fd.bankName}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Amount:</span>
+                        <span className="font-semibold">₹{fd.amount.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Interest Rate:</span>
+                        <span className="font-semibold">{fd.interestRate}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Maturity Date:</span>
+                        <span className="font-semibold">{new Date(fd.maturityDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t">
+                        <span className="text-sm text-muted-foreground">Maturity Amount:</span>
+                        <span className="font-bold text-primary">₹{maturityAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>
@@ -114,13 +118,12 @@ const Assets = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mutualFunds.map((fund) => {
                 const currentValue = fund.units * fund.nav;
-                const returns = currentValue - fund.investedAmount;
-                const returnsPercentage = ((returns / fund.investedAmount) * 100).toFixed(2);
                 
                 return (
                   <Card key={fund.id}>
                     <CardHeader>
-                      <CardTitle className="text-lg">{fund.name}</CardTitle>
+                      <CardTitle className="text-lg">{fund.fundName}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{fund.schemeName}</p>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div className="flex justify-between">
@@ -132,18 +135,12 @@ const Assets = () => {
                         <span className="font-semibold">₹{fund.nav}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Invested:</span>
-                        <span className="font-semibold">₹{fund.investedAmount.toLocaleString('en-IN')}</span>
+                        <span className="text-sm text-muted-foreground">Purchase Date:</span>
+                        <span className="font-semibold">{new Date(fund.purchaseDate).toLocaleDateString()}</span>
                       </div>
                       <div className="flex justify-between pt-2 border-t">
                         <span className="text-sm text-muted-foreground">Current Value:</span>
                         <span className="font-bold text-primary">₹{currentValue.toLocaleString('en-IN')}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Returns:</span>
-                        <span className={`font-bold ${returns >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {returns >= 0 ? '+' : ''}₹{returns.toLocaleString('en-IN')} ({returnsPercentage}%)
-                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -173,7 +170,7 @@ const Assets = () => {
               {savingsAccounts.map((account) => (
                 <Card key={account.id}>
                   <CardHeader>
-                    <CardTitle className="text-lg">{account.bank}</CardTitle>
+                    <CardTitle className="text-lg">{account.bankName}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <div className="flex justify-between">

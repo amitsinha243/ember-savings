@@ -17,8 +17,6 @@ export const MutualFundDetails = ({ funds }: MutualFundDetailsProps) => {
   }
 
   const totalValue = funds.reduce((sum, fund) => sum + (fund.units * fund.nav), 0);
-  const totalInvested = funds.reduce((sum, fund) => sum + fund.investedAmount, 0);
-  const overallReturns = ((totalValue - totalInvested) / totalInvested) * 100;
 
   return (
     <div className="space-y-4">
@@ -29,18 +27,12 @@ export const MutualFundDetails = ({ funds }: MutualFundDetailsProps) => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-foreground">₹{totalValue.toLocaleString('en-IN')}</p>
-          <p className="text-sm text-accent font-medium flex items-center justify-end gap-1">
-            <TrendingUp className="h-3 w-3" />
-            {overallReturns.toFixed(2)}% returns
-          </p>
         </div>
       </div>
 
       <div className="space-y-3">
         {funds.map((fund) => {
           const currentValue = fund.units * fund.nav;
-          const returns = ((currentValue - fund.investedAmount) / fund.investedAmount) * 100;
-          const isPositive = returns > 0;
           
           return (
             <Card 
@@ -50,12 +42,9 @@ export const MutualFundDetails = ({ funds }: MutualFundDetailsProps) => {
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-semibold text-foreground">{fund.name}</h4>
+                    <h4 className="font-semibold text-foreground">{fund.fundName}</h4>
+                    <p className="text-sm text-muted-foreground">{fund.schemeName}</p>
                   </div>
-                  <Badge variant={isPositive ? "default" : "destructive"} className="flex items-center gap-1">
-                    {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {returns.toFixed(2)}%
-                  </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/50">
@@ -64,16 +53,16 @@ export const MutualFundDetails = ({ funds }: MutualFundDetailsProps) => {
                     <p className="text-lg font-bold text-foreground">₹{currentValue.toLocaleString('en-IN')}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Invested</p>
-                    <p className="text-lg font-bold text-foreground">₹{fund.investedAmount.toLocaleString('en-IN')}</p>
-                  </div>
-                  <div>
                     <p className="text-xs text-muted-foreground">Units</p>
                     <p className="text-sm font-medium text-foreground">{fund.units.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">NAV</p>
                     <p className="text-sm font-medium text-foreground">₹{fund.nav.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Purchase Date</p>
+                    <p className="text-sm font-medium text-foreground">{new Date(fund.purchaseDate).toLocaleDateString('en-IN')}</p>
                   </div>
                 </div>
               </div>

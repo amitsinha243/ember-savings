@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { savingsAccountAPI, mutualFundAPI, fixedDepositAPI } from '@/services/api';
 
 export interface SavingsAccount {
   id: string;
-  bank: string;
+  bankName: string;
   accountNumber: string;
   balance: number;
   interestRate: number;
@@ -11,19 +12,19 @@ export interface SavingsAccount {
 
 export interface MutualFund {
   id: string;
-  name: string;
+  fundName: string;
+  schemeName: string;
   units: number;
   nav: number;
-  investedAmount: number;
+  purchaseDate: string;
 }
 
 export interface FixedDeposit {
   id: string;
-  bank: string;
+  bankName: string;
   amount: number;
   interestRate: number;
   maturityDate: string;
-  maturityAmount: number;
 }
 
 export const useAssets = () => {
@@ -31,56 +32,71 @@ export const useAssets = () => {
   const [savingsAccounts, setSavingsAccounts] = useState<SavingsAccount[]>([]);
   const [mutualFunds, setMutualFunds] = useState<MutualFund[]>([]);
   const [fixedDeposits, setFixedDeposits] = useState<FixedDeposit[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAssets = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const [savings, funds, deposits] = await Promise.all([
+        savingsAccountAPI.getAll(),
+        mutualFundAPI.getAll(),
+        fixedDepositAPI.getAll()
+      ]);
+      
+      setSavingsAccounts(savings);
+      setMutualFunds(funds);
+      setFixedDeposits(deposits);
+    } catch (error) {
+      console.error('Error fetching assets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      const key = `assets_${user.id}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const data = JSON.parse(stored);
-        setSavingsAccounts(data.savingsAccounts || []);
-        setMutualFunds(data.mutualFunds || []);
-        setFixedDeposits(data.fixedDeposits || []);
-      }
-    }
+    fetchAssets();
   }, [user]);
 
-  const saveToStorage = (savings: SavingsAccount[], funds: MutualFund[], deposits: FixedDeposit[]) => {
-    if (user) {
-      const key = `assets_${user.id}`;
-      localStorage.setItem(key, JSON.stringify({
-        savingsAccounts: savings,
-        mutualFunds: funds,
-        fixedDeposits: deposits
-      }));
+  const addSavingsAccount = async (account: Omit<SavingsAccount, 'id'>) => {
+    if (!user) return;
+    
+    try {
+      await savingsAccountAPI.create(account);
+      await fetchAssets();
+    } catch (error) {
+      console.error('Error adding savings account:', error);
     }
   };
 
-  const addSavingsAccount = (account: Omit<SavingsAccount, 'id'>) => {
-    const newAccount = { ...account, id: crypto.randomUUID() };
-    const updated = [...savingsAccounts, newAccount];
-    setSavingsAccounts(updated);
-    saveToStorage(updated, mutualFunds, fixedDeposits);
+  const addMutualFund = async (fund: Omit<MutualFund, 'id'>) => {
+    if (!user) return;
+    
+    try {
+      await mutualFundAPI.create(fund);
+      await fetchAssets();
+    } catch (error) {
+      console.error('Error adding mutual fund:', error);
+    }
   };
 
-  const addMutualFund = (fund: Omit<MutualFund, 'id'>) => {
-    const newFund = { ...fund, id: crypto.randomUUID() };
-    const updated = [...mutualFunds, newFund];
-    setMutualFunds(updated);
-    saveToStorage(savingsAccounts, updated, fixedDeposits);
-  };
-
-  const addFixedDeposit = (deposit: Omit<FixedDeposit, 'id'>) => {
-    const newDeposit = { ...deposit, id: crypto.randomUUID() };
-    const updated = [...fixedDeposits, newDeposit];
-    setFixedDeposits(updated);
-    saveToStorage(savingsAccounts, mutualFunds, updated);
+  const addFixedDeposit = async (deposit: Omit<FixedDeposit, 'id'>) => {
+    if (!user) return;
+    
+    try {
+      await fixedDepositAPI.create(deposit);
+      await fetchAssets();
+    } catch (error) {
+      console.error('Error adding fixed deposit:', error);
+    }
   };
 
   return {
     savingsAccounts,
     mutualFunds,
     fixedDeposits,
+    loading,
     addSavingsAccount,
     addMutualFund,
     addFixedDeposit

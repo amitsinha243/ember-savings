@@ -21,25 +21,25 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
     
     if (type === 'savings') {
       addSavingsAccount({
-        bank: formData.bank,
+        bankName: formData.bankName,
         accountNumber: formData.accountNumber,
         balance: parseFloat(formData.balance),
         interestRate: parseFloat(formData.interestRate)
       });
     } else if (type === 'mutual-fund') {
       addMutualFund({
-        name: formData.name,
+        fundName: formData.fundName,
+        schemeName: formData.schemeName,
         units: parseFloat(formData.units),
         nav: parseFloat(formData.nav),
-        investedAmount: parseFloat(formData.investedAmount)
+        purchaseDate: formData.purchaseDate
       });
     } else if (type === 'fixed-deposit') {
       addFixedDeposit({
-        bank: formData.bank,
+        bankName: formData.bankName,
         amount: parseFloat(formData.amount),
         interestRate: parseFloat(formData.interestRate),
-        maturityDate: formData.maturityDate,
-        maturityAmount: parseFloat(formData.maturityAmount)
+        maturityDate: formData.maturityDate
       });
     }
 
@@ -53,8 +53,8 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
       return (
         <>
           <div className="space-y-2">
-            <Label htmlFor="bank">Bank Name</Label>
-            <Input id="bank" value={formData.bank || ''} onChange={(e) => setFormData({ ...formData, bank: e.target.value })} required />
+            <Label htmlFor="bankName">Bank Name</Label>
+            <Input id="bankName" value={formData.bankName || ''} onChange={(e) => setFormData({ ...formData, bankName: e.target.value })} required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountNumber">Account Number</Label>
@@ -74,8 +74,12 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
       return (
         <>
           <div className="space-y-2">
-            <Label htmlFor="name">Fund Name</Label>
-            <Input id="name" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+            <Label htmlFor="fundName">Fund Name</Label>
+            <Input id="fundName" value={formData.fundName || ''} onChange={(e) => setFormData({ ...formData, fundName: e.target.value })} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="schemeName">Scheme Name</Label>
+            <Input id="schemeName" value={formData.schemeName || ''} onChange={(e) => setFormData({ ...formData, schemeName: e.target.value })} required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="units">Units</Label>
@@ -86,8 +90,8 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
             <Input id="nav" type="number" step="0.01" value={formData.nav || ''} onChange={(e) => setFormData({ ...formData, nav: e.target.value })} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="investedAmount">Invested Amount (₹)</Label>
-            <Input id="investedAmount" type="number" value={formData.investedAmount || ''} onChange={(e) => setFormData({ ...formData, investedAmount: e.target.value })} required />
+            <Label htmlFor="purchaseDate">Purchase Date</Label>
+            <Input id="purchaseDate" type="date" value={formData.purchaseDate || ''} onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })} required />
           </div>
         </>
       );
@@ -95,8 +99,8 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
       return (
         <>
           <div className="space-y-2">
-            <Label htmlFor="bank">Bank Name</Label>
-            <Input id="bank" value={formData.bank || ''} onChange={(e) => setFormData({ ...formData, bank: e.target.value })} required />
+            <Label htmlFor="bankName">Bank Name</Label>
+            <Input id="bankName" value={formData.bankName || ''} onChange={(e) => setFormData({ ...formData, bankName: e.target.value })} required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="amount">Amount (₹)</Label>
@@ -109,10 +113,6 @@ export const AddAssetDialog = ({ open, onOpenChange, type }: AddAssetDialogProps
           <div className="space-y-2">
             <Label htmlFor="maturityDate">Maturity Date</Label>
             <Input id="maturityDate" type="date" value={formData.maturityDate || ''} onChange={(e) => setFormData({ ...formData, maturityDate: e.target.value })} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="maturityAmount">Maturity Amount (₹)</Label>
-            <Input id="maturityAmount" type="number" value={formData.maturityAmount || ''} onChange={(e) => setFormData({ ...formData, maturityAmount: e.target.value })} required />
           </div>
         </>
       );

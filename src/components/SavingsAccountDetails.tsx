@@ -42,7 +42,7 @@ export const SavingsAccountDetails = ({ accounts }: SavingsAccountDetailsProps) 
                   <Building2 className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">{account.bank}</h4>
+                  <h4 className="font-semibold text-foreground">{account.bankName}</h4>
                   <p className="text-sm text-muted-foreground mt-1">
                     A/c: {account.accountNumber}
                   </p>
