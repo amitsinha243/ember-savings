@@ -38,7 +38,7 @@ export const SavingsChart = () => {
 
     const months = [];
     const now = new Date();
-    for (let i = 5; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthName = date.toLocaleDateString('en-US', { month: 'short' });
@@ -62,12 +62,12 @@ export const SavingsChart = () => {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
+          <BarChart data={chartData} barCategoryGap="10%">
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis 
               dataKey="month" 
               stroke="hsl(var(--muted-foreground))"
-              style={{ fontSize: '12px' }}
+              style={{ fontSize: '11px' }}
             />
             <YAxis 
               stroke="hsl(var(--muted-foreground))"
@@ -83,10 +83,10 @@ export const SavingsChart = () => {
               formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`}
             />
             <Legend />
-            <Bar dataKey="Savings Accounts" stackId="a" fill="#10b981" />
-            <Bar dataKey="Mutual Funds" stackId="a" fill="#3b82f6" />
-            <Bar dataKey="Fixed Deposits" stackId="a" fill="#f59e0b" />
-            <Bar dataKey="Stocks" stackId="a" fill="#8b5cf6" />
+            <Bar dataKey="Savings Accounts" stackId="a" fill="#10b981" maxBarSize={40} />
+            <Bar dataKey="Mutual Funds" stackId="a" fill="#3b82f6" maxBarSize={40} />
+            <Bar dataKey="Fixed Deposits" stackId="a" fill="#f59e0b" maxBarSize={40} />
+            <Bar dataKey="Stocks" stackId="a" fill="#8b5cf6" maxBarSize={40} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
