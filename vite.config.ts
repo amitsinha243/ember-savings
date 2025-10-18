@@ -3,8 +3,11 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
+// Replace with your GitHub repo name
+const repoName = "ember-savings";
+
 export default defineConfig(({ mode }) => ({
+  base: `/${repoName}/`, // 👈 Important for GitHub Pages
   server: {
     host: "::",
     port: 9000,
