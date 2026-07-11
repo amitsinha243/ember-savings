@@ -145,6 +145,9 @@ export const IncomeVsExpenseChart = () => {
     const monthlyIncomes: { [key: string]: number } = {};
 
     expenses.forEach((expense) => {
+      if (expense.category === 'Investments' || expense.category === 'RD Installment') {
+        return;
+      }
       const date = new Date(expense.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       monthlyExpenses[monthKey] = (monthlyExpenses[monthKey] || 0) + expense.amount;

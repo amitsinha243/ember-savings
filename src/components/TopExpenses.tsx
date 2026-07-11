@@ -58,6 +58,9 @@ export const TopExpenses = () => {
   const currentYear = currentDate.getFullYear();
 
   const monthExpenses = allExpenses.filter((e) => {
+    // if (e.category === 'Investments' || e.category === 'RD Installment') {
+    //   return false;
+    // }
     const d = new Date(e.date);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });

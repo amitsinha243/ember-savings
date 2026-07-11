@@ -176,15 +176,104 @@ const Index = () => {
     return netSavingsFlow - (mFunds + mStocks + mDeposits);
   };
 
-  const monthlyFixedDeposits = getMonthlyFDAddition(fixedDeposits, currentMonth, currentYear);
-  const monthlyMutualFunds = getMonthlyTransactionAddition(mutualFundTransactions, currentMonth, currentYear, 'MF');
-  const monthlySavings = getMonthlySavingsAddition(currentMonth, currentYear);
-  const monthlyStocks = getMonthlyTransactionAddition(stockTransactions, currentMonth, currentYear, 'Stock');
+  const getSavingsBalanceAsOf = (targetMonth: number, targetYear: number): number => {
+    const now = new Date();
+    const isCurrentMonth = now.getMonth() === targetMonth && now.getFullYear() === targetYear;
+    if (isCurrentMonth) {
+      return totalSavings;
+    }
 
-  const prevMonthFixedDeposits = getMonthlyFDAddition(fixedDeposits, previousMonth, previousYear);
-  const prevMonthMutualFunds = getMonthlyTransactionAddition(mutualFundTransactions, previousMonth, previousYear, 'MF');
-  const prevMonthSavings = getMonthlySavingsAddition(previousMonth, previousYear);
-  const prevMonthStocks = getMonthlyTransactionAddition(stockTransactions, previousMonth, previousYear, 'Stock');
+    const cutoffDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+    const postIncomes = incomes
+      .filter(i => {
+        if (!i.savingsAccountId) return false;
+        const d = new Date(i.date);
+        return d > cutoffDate;
+      })
+      .reduce((sum, i) => sum + i.amount, 0);
+
+    const postExpenses = expenses
+      .filter(e => {
+        if (!e.savingsAccountId) return false;
+        const d = new Date(e.date);
+        return d > cutoffDate;
+      })
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const newAccountsBalance = savingsAccounts
+      .filter(acc => {
+        if (!acc.createdAt) return false;
+        const d = new Date(acc.createdAt);
+        return d > cutoffDate;
+      })
+      .reduce((sum, acc) => sum + acc.balance, 0);
+
+    return totalSavings - newAccountsBalance - postIncomes + postExpenses;
+  };
+
+  const getFixedDepositsValueAsOf = (targetMonth: number, targetYear: number): number => {
+    const cutoffDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+    return fixedDeposits.reduce((sum, fd) => {
+      const createdDate = new Date(fd.startDate || fd.createdAt || new Date());
+      if (createdDate > cutoffDate) {
+        return sum;
+      }
+
+      if (fd.depositType === 'RD') {
+        const startDate = new Date(fd.startDate || fd.createdAt || new Date());
+        const monthsElapsed = Math.max(1,
+          (targetYear - startDate.getFullYear()) * 12 +
+          (targetMonth - startDate.getMonth()) + 1
+        );
+        const maturityDate = new Date(fd.maturityDate);
+        const totalMonths = Math.max(1,
+          (maturityDate.getFullYear() - startDate.getFullYear()) * 12 +
+          (maturityDate.getMonth() - startDate.getMonth())
+        );
+        return sum + (fd.amount * Math.min(monthsElapsed, totalMonths));
+      }
+
+      return sum + fd.amount;
+    }, 0);
+  };
+
+  const getMutualFundsValueAsOf = (targetMonth: number, targetYear: number): number => {
+    const cutoffDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+    return mutualFunds.reduce((sum, fund) => {
+      const fundCreatedDate = new Date(fund.purchaseDate || fund.createdAt || new Date());
+      if (fundCreatedDate > cutoffDate) {
+        return sum;
+      }
+
+      const postTxUnits = mutualFundTransactions
+        .filter(tx => tx.mutualFundId === fund.id && new Date(tx.purchaseDate || tx.createdAt) > cutoffDate)
+        .reduce((s, tx) => s + tx.units, 0);
+
+      const historicalUnits = Math.max(0, fund.units - postTxUnits);
+      return sum + (historicalUnits * fund.nav);
+    }, 0);
+  };
+
+  const getStocksValueAsOf = (targetMonth: number, targetYear: number): number => {
+    const cutoffDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+    return stocks.reduce((sum, stock) => {
+      const stockCreatedDate = new Date(stock.purchaseDate || stock.createdAt || new Date());
+      if (stockCreatedDate > cutoffDate) {
+        return sum;
+      }
+
+      const postTxQty = stockTransactions
+        .filter(tx => tx.stockId === stock.id && new Date(tx.purchaseDate || tx.createdAt) > cutoffDate)
+        .reduce((s, tx) => s + tx.quantity, 0);
+
+      const historicalQty = Math.max(0, stock.quantity - postTxQty);
+      return sum + (historicalQty * stock.purchasePrice);
+    }, 0);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -234,8 +323,8 @@ const Index = () => {
                 accentLight="#f59e0b14"
                 accentBorder="#f59e0b30"
                 accentColor="#f59e0b"
-                thisMonth={monthlyFixedDeposits}
-                lastMonth={prevMonthFixedDeposits}
+                thisMonth={totalFixedDeposits}
+                lastMonth={getFixedDepositsValueAsOf(previousMonth, previousYear)}
                 count={fixedDeposits.length}
                 countLabel={`deposit${fixedDeposits.length !== 1 ? 's' : ''}`}
                 onViewDetails={() => setSelectedAsset('fixeddeposits')}
@@ -260,8 +349,8 @@ const Index = () => {
                 accentLight="#3b82f614"
                 accentBorder="#3b82f630"
                 accentColor="#3b82f6"
-                thisMonth={monthlyMutualFunds}
-                lastMonth={prevMonthMutualFunds}
+                thisMonth={totalMutualFunds}
+                lastMonth={getMutualFundsValueAsOf(previousMonth, previousYear)}
                 count={mutualFunds.length}
                 countLabel={`fund${mutualFunds.length !== 1 ? 's' : ''}`}
                 onViewDetails={() => setSelectedAsset('mutualfunds')}
@@ -286,8 +375,8 @@ const Index = () => {
                 accentLight="#10b98114"
                 accentBorder="#10b98130"
                 accentColor="#10b981"
-                thisMonth={monthlySavings}
-                lastMonth={prevMonthSavings}
+                thisMonth={totalSavings}
+                lastMonth={getSavingsBalanceAsOf(previousMonth, previousYear)}
                 count={savingsAccounts.length}
                 countLabel={`account${savingsAccounts.length !== 1 ? 's' : ''}`}
                 onViewDetails={() => setSelectedAsset('savings')}
@@ -312,8 +401,8 @@ const Index = () => {
                 accentLight="#8b5cf614"
                 accentBorder="#8b5cf630"
                 accentColor="#8b5cf6"
-                thisMonth={monthlyStocks}
-                lastMonth={prevMonthStocks}
+                thisMonth={totalStocks}
+                lastMonth={getStocksValueAsOf(previousMonth, previousYear)}
                 count={stocks.length}
                 countLabel={`holding${stocks.length !== 1 ? 's' : ''}`}
                 onViewDetails={() => setSelectedAsset('stocks')}
