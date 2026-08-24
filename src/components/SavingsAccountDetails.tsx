@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, Edit, Trash2, Percent, TrendingUp, Landmark } from "lucide-react";
+import { Building2, Edit, Trash2, Percent, TrendingUp, Landmark, Calendar } from "lucide-react";
 import { SavingsAccount } from "@/hooks/useAssets";
 import { EditSavingsAccountDialog } from "./EditSavingsAccountDialog";
 import { toast } from "sonner";
@@ -15,13 +15,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { maskAccountNumber } from "@/lib/utils";
+import { maskAccountNumber, getAccountBalanceHistory } from "@/lib/utils";
 
 interface SavingsAccountDetailsProps {
   accounts: SavingsAccount[];
   onUpdate: (id: string, data: Partial<SavingsAccount>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  incomes: any[];
+  expenses: any[];
 }
+
 
 const BANK_COLORS = [
   { bg: "from-blue-600 to-blue-400", light: "#3b82f618", border: "#3b82f640", text: "#3b82f6" },
@@ -31,9 +34,15 @@ const BANK_COLORS = [
   { bg: "from-rose-600 to-rose-400", light: "#f43f5e18", border: "#f43f5e40", text: "#f43f5e" },
 ];
 
-export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete }: SavingsAccountDetailsProps) => {
+export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete, incomes, expenses }: SavingsAccountDetailsProps) => {
   const [editAccount, setEditAccount] = useState<SavingsAccount | null>(null);
   const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
+
+  const toggleHistory = (accountId: string) => {
+    setExpandedAccountId(expandedAccountId === accountId ? null : accountId);
+  };
+
 
   const handleDelete = async () => {
     if (!deleteAccountId) return;
@@ -85,6 +94,12 @@ export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete }: SavingsA
           // Estimated annual interest
           const annualInterest = (account.balance * account.interestRate) / 100;
 
+          // History and last month balance
+          const history = getAccountBalanceHistory(account, expenses, incomes, 6);
+          const isExpanded = expandedAccountId === account.id;
+          const lastMonthData = history[0];
+          const lastMonthBalance = lastMonthData ? lastMonthData.balance : account.balance;
+
           return (
             <div
               key={account.id}
@@ -110,6 +125,17 @@ export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete }: SavingsA
                   <p className="text-xl font-bold text-foreground whitespace-nowrap">
                     ₹{account.balance.toLocaleString("en-IN")}
                   </p>
+                </div>
+
+                {/* Last Month Balance Info */}
+                <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-muted/40 border border-border/20">
+                  <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-muted-foreground/75" />
+                    End of {lastMonthData ? lastMonthData.monthName : "last month"}
+                  </span>
+                  <span className="font-bold text-foreground">
+                    ₹{lastMonthBalance.toLocaleString("en-IN")}
+                  </span>
                 </div>
 
                 {/* Stat chips */}
@@ -148,11 +174,19 @@ export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete }: SavingsA
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs"
+                    className="flex-1 h-8 text-xs font-medium"
+                    onClick={() => toggleHistory(account.id)}
+                  >
+                    <TrendingUp className={`h-3.5 w-3.5 mr-1.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    {isExpanded ? "Hide History" : "History"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3"
                     onClick={() => setEditAccount(account)}
                   >
-                    <Edit className="h-3.5 w-3.5 mr-1.5" />
-                    Edit
+                    <Edit className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                   <Button
                     variant="destructive"
@@ -163,6 +197,29 @@ export const SavingsAccountDetails = ({ accounts, onUpdate, onDelete }: SavingsA
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
+
+                {/* Expanded Month-End Balance History */}
+                {isExpanded && (
+                  <div className="pt-3 border-t border-border/40 space-y-2 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Month-End Balance History
+                    </p>
+                    <div className="rounded-xl border border-border/30 overflow-hidden bg-muted/20">
+                      {history.length === 0 ? (
+                        <p className="text-xs text-muted-foreground p-3 text-center">No history available</p>
+                      ) : (
+                        <div className="divide-y divide-border/20">
+                          {history.map((hist, hIdx) => (
+                            <div key={hIdx} className="flex justify-between items-center px-3 py-2 text-xs hover:bg-muted/30 transition-colors">
+                              <span className="text-muted-foreground font-medium">{hist.dateLabel}</span>
+                              <span className="font-bold text-foreground">₹{hist.balance.toLocaleString("en-IN")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );

@@ -7,6 +7,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAssets } from "@/hooks/useAssets";
+import { useIncome } from "@/hooks/useIncome";
+import { useExpenses } from "@/hooks/useExpenses";
+import { getAccountBalanceAsOf } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +18,20 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { Footer } from "@/components/Footer";
 import { Progress } from "@/components/ui/progress";
 
+
 const Assets = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { savingsAccounts, mutualFunds, fixedDeposits, stocks } = useAssets();
+  const { incomes } = useIncome();
+  const { expenses } = useExpenses();
+
+  const now = new Date();
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthName = prevMonthDate.toLocaleString('default', { month: 'long' });
+  const prevMonth = prevMonthDate.getMonth();
+  const prevYear = prevMonthDate.getFullYear();
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -383,49 +396,55 @@ const Assets = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {savingsAccounts.map((account) => (
-                <Card key={account.id} className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-400" />
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl font-bold">{account.bankName}</CardTitle>
-                        <p className="text-xs font-mono font-bold text-muted-foreground mt-1">
-                          **** {account.accountNumber.slice(-4)}
-                        </p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-                        <PiggyBank className="h-5 w-5 text-emerald-600 group-hover:text-inherit" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-full bg-emerald-100 text-emerald-700">
-                          <ShieldCheck size={14} />
+              {savingsAccounts.map((account) => {
+                const lastMonthBalance = getAccountBalanceAsOf(account, expenses, incomes, prevMonth, prevYear);
+                return (
+                  <Card key={account.id} className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-400" />
+                    <CardHeader className="pb-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl font-bold">{account.bankName}</CardTitle>
+                          <p className="text-xs font-mono font-bold text-muted-foreground mt-1">
+                            **** {account.accountNumber.slice(-4)}
+                          </p>
                         </div>
-                        <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">Secure Account</span>
+                        <div className="p-2 rounded-lg bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                          <PiggyBank className="h-5 w-5 text-emerald-600 group-hover:text-inherit" />
+                        </div>
                       </div>
-                      <Badge variant="outline" className="font-bold text-emerald-600 border-emerald-200">
-                        {account.interestRate}% Interest
-                      </Badge>
-                    </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-full bg-emerald-100 text-emerald-700">
+                            <ShieldCheck size={14} />
+                          </div>
+                          <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">Secure Account</span>
+                        </div>
+                        <Badge variant="outline" className="font-bold text-emerald-600 border-emerald-200">
+                          {account.interestRate}% Interest
+                        </Badge>
+                      </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-border/50">
-                      <div>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">Current Balance</p>
-                        <p className="text-2xl font-black text-emerald-600 leading-none">
-                          ₹{account.balance.toLocaleString('en-IN')}
-                        </p>
+                      <div className="flex justify-between items-center pt-4 border-t border-border/50">
+                        <div>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">Current Balance</p>
+                          <p className="text-2xl font-black text-emerald-600 leading-none">
+                            ₹{account.balance.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">End of {lastMonthName}</p>
+                          <p className="text-lg font-bold text-foreground leading-none mt-1">
+                            ₹{lastMonthBalance.toLocaleString('en-IN')}
+                          </p>
+                        </div>
                       </div>
-                      <div className={`p-3 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-60`}>
-                        <ArrowUpRight className="h-6 w-6 text-emerald-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>

@@ -9,10 +9,9 @@ import { toast } from "sonner";
 
 const INCOME_SOURCES = [
   'Salary',
-  'Freelance',
+  'SRide',
   'Business',
   'Investment Returns',
-  'Rental Income',
   'Other'
 ] as const;
 
@@ -44,7 +43,7 @@ export const EditIncomeDialog = ({ open, onOpenChange, income }: EditIncomeDialo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await updateIncome(income.id, {
         amount: parseFloat(formData.amount),
@@ -52,7 +51,7 @@ export const EditIncomeDialog = ({ open, onOpenChange, income }: EditIncomeDialo
         source: formData.source,
         description: formData.description
       });
-      
+
       toast.success("Income updated successfully");
       onOpenChange(false);
     } catch (error) {

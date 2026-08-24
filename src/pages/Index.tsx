@@ -458,7 +458,15 @@ const Index = () => {
           <DialogHeader>
             <DialogTitle className="text-xl">Asset Details</DialogTitle>
           </DialogHeader>
-          {selectedAsset === 'savings' && <SavingsAccountDetails accounts={savingsAccounts} onUpdate={updateSavingsAccount} onDelete={deleteSavingsAccount} />}
+           {selectedAsset === 'savings' && (
+            <SavingsAccountDetails
+              accounts={savingsAccounts}
+              onUpdate={updateSavingsAccount}
+              onDelete={deleteSavingsAccount}
+              incomes={incomes}
+              expenses={expenses}
+            />
+          )}
           {selectedAsset === 'mutualfunds' && <MutualFundDetails funds={mutualFunds} onRefresh={() => window.location.reload()} onUpdate={updateMutualFund} onDelete={deleteMutualFund} />}
           {selectedAsset === 'fixeddeposits' && <FixedDepositDetails deposits={fixedDeposits} onUpdate={updateFixedDeposit} onDelete={deleteFixedDeposit} />}
           {selectedAsset === 'stocks' && <StockDetails stocks={stocks} onUpdate={updateStock} onDelete={deleteStock} onRefresh={fetchAssets} />}

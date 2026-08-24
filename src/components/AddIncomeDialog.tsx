@@ -11,10 +11,9 @@ import { toast } from "sonner";
 
 const INCOME_SOURCES = [
   { label: 'Salary', value: 'Salary', icon: Briefcase, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { label: 'Freelance', value: 'Freelance', icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+  { label: 'SRide', value: 'SRide', icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
   { label: 'Business', value: 'Business', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   { label: 'Investment Returns', value: 'Investment Returns', icon: IndianRupee, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { label: 'Rental Income', value: 'Rental Income', icon: Home, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   { label: 'Other', value: 'Other', icon: MoreHorizontal, color: 'text-slate-500', bg: 'bg-slate-500/10' }
 ] as const;
 
